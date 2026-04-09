@@ -5,7 +5,7 @@ A high-performance full-stack web application designed for interactive business 
 ---
 
 ## 🌐 Live Deployment
-- **Interactive Web App:** [https://prismatic-tiramisu-964888.netlify.app](https://prismatic-tiramisu-964888.netlify.app)
+- **Data Analaysis Web App:** [https://prismatic-tiramisu-964888.netlify.app](https://prismatic-tiramisu-964888.netlify.app)
 - **REST API Backend:** [https://data-analysis-backend-hz2b.onrender.com](https://data-analysis-backend-hz2b.onrender.com)
 
 ---
