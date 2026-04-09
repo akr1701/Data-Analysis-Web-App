@@ -89,11 +89,12 @@ cd frontend
 npm install
 npm start
 
-### How It Works
-Upload a CSV dataset
-Backend processes data using Pandas
-API returns structured insights
-Frontend renders interactive charts
+ ### How It Works
+1. User uploads a CSV file  
+2. Frontend sends file to FastAPI backend  
+3. Backend processes data  
+4. API returns structured insights  
+5. Frontend renders charts and tables  
 
 👨‍💻 Developer
 
