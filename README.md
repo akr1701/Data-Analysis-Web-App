@@ -1,102 +1,121 @@
-# 📊 Data Analysis Web App
+# 📊 Data Analysis Web App (FastAPI + React)
 
-A full-stack data analysis platform that allows users to upload any CSV file and generate real-time insights, visualizations, and statistical summaries.
-
+A professional full-stack data analysis platform that allows users to upload any CSV file and generate real-time insights, detailed statistical summaries, and dynamic visualizations.
 
 ---
 
 ## 🌐 Live Demo
 
-🚀 **Application URL:**  
-https://prismatic-tiramisu-964888.netlify.app  
-
-This is a fully deployed full-stack web application where the frontend and backend are seamlessly integrated. Users can upload datasets, apply fil##ters, and view real-time data visualizations.
-
----
-
-### 🔧 Backend API (Optional)
-https://data-analysis-backend-hz2b.onrender.com  
-
-### 📘 API Documentation
-https://data-analysis-backend-hz2b.onrender.com/docs  
+🚀 **Application URL:** [https://prismatic-tiramisu-964888.netlify.app](https://prismatic-tiramisu-964888.netlify.app)  
+📘 **API Documentation (Swagger):** [https://data-analysis-backend-hz2b.onrender.com/docs](https://data-analysis-backend-hz2b.onrender.com/docs)  
+🔧 **Backend API Base:** [https://data-analysis-backend-hz2b.onrender.com](https://data-analysis-backend-hz2b.onrender.com)
 
 ---
 
- ## 🚀 Features
+## 🚀 Key Features
 
-### 🔹 CSV Upload & Processing
-- Upload any CSV dataset  
-- Automatic parsing and analysis using backend engine  
+### 🔹 Advanced Data Analysis (Pandas Engine)
+- **Automatic Metadata Detection:** Identifies column names and data types (dtypes) instantly.
+- **Missing Value Analysis:** Detects and counts null values across the entire dataset.
+- **Summary Statistics:** Provides deep insights using Mean, Min, and Max for all numeric columns.
 
-### 🔹 Data Insights
-- Sales aggregation by category  
-- Profit distribution by region  
-- Top-performing products (Top 5)  
-- Total row count  
+### 🔹 Interactive Visualization & Dashboard
+- **Dynamic Charts:** Users can select specific columns from a dropdown to generate interactive Bar charts.
+- **Automated Insights:** Highlighted cards showing "Highest Performing Column" and "Total Missing Values" for quick decision making.
+- **Responsive UI:** Dark-themed, modern dashboard built with React and Chart.js.
 
-### 🔹 Advanced Analysis
-- Column listing  
-- Data types detection  
-- Missing values detection  
-- Summary statistics (mean, min, max, etc.)  
-
-### 🔹 Interactive Dashboard
-- Dynamic region filter  
-- Real-time chart updates  
-- Responsive UI with dark theme  
+### 🔹 Professional API Structure
+- **ID-Based Session Management:** Implemented an ID-based system to store and retrieve dataset analysis without re-uploading files.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** React.js  
-- **Backend:** FastAPI (REST API)  
-- **Data Processing:** Pandas  
-- **Visualization:** Chart.js  
-- **Deployment:** Netlify (Frontend), Render (Backend)  
+- **Frontend:** React.js (Hooks, Fetch API)
+- **Backend:** FastAPI (Python)
+- **Data Processing:** Pandas
+- **Visualization:** Chart.js / react-chartjs-2
+- **Deployment:** Netlify (Frontend) & Render (Backend)
+
+---
+
+## 📖 API Endpoints (Restful Design)
+
+As per the assignment requirements, the following structured endpoints are implemented:
+
+| Endpoint | Method | Description |
+| :--- | :--- | :--- |
+| `/upload` | `POST` | Uploads CSV and returns a unique `dataset_id`. |
+| `/summary/{id}` | `GET` | Fetches Data Types, Missing Values, and Stats (Mean, Min, Max). |
+| `/plot-data/{id}` | `GET` | Returns dynamic chart-ready data based on selected column. |
 
 ---
 
 ## 📂 Project Structure
 
+```text
 DataAnalysisapp/
 │
 ├── Backend/
-│ ├── main.py
-│ └── requirements.txt
+│   ├── main.py           # FastAPI logic with Pandas processing
+│   └── requirements.txt  # Python dependencies (FastAPI, Pandas, etc.)
 │
-├── frontend/
-│ ├── src/
-│ ├── public/
-│ └── package.json
-
+└── frontend/
+    ├── src/
+    │   ├── App.js        # Main Dashboard logic and API integration
+    │   └── ...           # React components and styling
+    └── package.json      # Frontend dependencies
 
 ---
 
 ## ⚙️ Installation & Setup
 
-### 🔹 Backend Setup
+Follow these steps to set up and run the project locally on your machine:
 
+### 🔹 1. Backend Setup (FastAPI)
+Initialize the Python environment and install the necessary dependencies:
+
+```powershell
+# Navigate to the Backend folder
 cd Backend
+
+# Create a Virtual Environment
 python -m venv venv
-venv\Scripts\activate
+
+# Activate the Virtual Environment
+# For Windows:
+.\venv\Scripts\activate
+
+# Install required Python packages
 pip install -r requirements.txt
+
+# Start the FastAPI server
 python -m uvicorn main:app --reload
 
-### 🔹 Frontend Setup
+---
 
+### 🔹 2. Frontend Setup (React)
+
+Open a new terminal and follow these steps to set up the React dashboard:
+
+```powershell
+# Navigate to the frontend folder
 cd frontend
+
+# Install necessary Node.js dependencies
 npm install
+
+# Start the development server
 npm start
+ ---
 
- ### How It Works
-1. User uploads a CSV file  
-2. Frontend sends file to FastAPI backend  
-3. Backend processes data  
-4. API returns structured insights  
-5. Frontend renders charts and tables  
+## 👨‍💻 Developer & Project Information
 
-## 👨‍💻 Developer
-
-**Ankit Kumar**  
-💻 Software Developer
+| Detail | Information |
+| :--- | :--- |
+| **Developer Name** | **Ankit Kumar** |
+| **Role** | Software Developer |
+| **Project Name** |  Data Analysis  Web App|
+| **Main Tools** | FastAPI, React, Pandas, Chart.js |
+| 
+---
