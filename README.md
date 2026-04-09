@@ -1,6 +1,7 @@
-#📊 Data Analysis Web App
+# 📊 Data Analysis Web App
 
 A full-stack data analysis platform that allows users to upload any CSV file and generate real-time insights, visualizations, and statistical summaries.
+
 
 ---
 
@@ -9,7 +10,7 @@ A full-stack data analysis platform that allows users to upload any CSV file and
 🚀 **Application URL:**  
 https://prismatic-tiramisu-964888.netlify.app  
 
-This is a fully deployed full-stack web application where the frontend and backend are seamlessly integrated. Users can upload datasets, apply filters, and view real-time data visualizations.
+This is a fully deployed full-stack web application where the frontend and backend are seamlessly integrated. Users can upload datasets, apply fil##ters, and view real-time data visualizations.
 
 ---
 
@@ -21,24 +22,31 @@ https://data-analysis-backend-hz2b.onrender.com/docs
 
 ---
 
-## 🚀 Features
-🔹 CSV Upload & Processing
-Upload any CSV dataset
-Automatic parsing and analysis using backend engine
-🔹 Data Insights
-Sales aggregation by category
-Profit distribution by region
-Top-performing products (Top 5)
-Total row count
-🔹 Advanced Analysis
-Column listing
-Data types detection
-Missing values detection
-Summary statistics (mean, min, max, etc.)
-🔹 Interactive Dashboard
-Dynamic region filter
-Real-time chart updates
-Responsive UI with dark theme
+ ## 🚀 Features
+
+### 🔹 CSV Upload & Processing
+- Upload any CSV dataset  
+- Automatic parsing and analysis using backend engine  
+
+### 🔹 Data Insights
+- Sales aggregation by category  
+- Profit distribution by region  
+- Top-performing products (Top 5)  
+- Total row count  
+
+### 🔹 Advanced Analysis
+- Column listing  
+- Data types detection  
+- Missing values detection  
+- Summary statistics (mean, min, max, etc.)  
+
+### 🔹 Interactive Dashboard
+- Dynamic region filter  
+- Real-time chart updates  
+- Responsive UI with dark theme  
+
+---
+
 ## 🛠️ Tech Stack
 
 - **Frontend:** React.js  
@@ -69,20 +77,19 @@ DataAnalysisapp/
 
 ### 🔹 Backend Setup
 
-```bash
 cd Backend
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
 python -m uvicorn main:app --reload
 
-🔹 Frontend Setup
+### 🔹 Frontend Setup
 
 cd frontend
 npm install
 npm start
 
-How It Works
+### How It Works
 Upload a CSV dataset
 Backend processes data using Pandas
 API returns structured insights
