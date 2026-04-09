@@ -8,23 +8,35 @@ function App() {
   const [selectedRegion, setSelectedRegion] = useState("");
 
   const uploadFile = async (regionValue = selectedRegion) => {
+    if (!file) {
+      alert("Please select a file first");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("region", regionValue);
 
-    const res = await fetch("https://data-analysis-backend-hz2b.onrender.com/analyze", {
-      method: "POST",
-      body: formData,
-    });
+    try {
+      const res = await fetch("https://data-analysis-backend-hz2b.onrender.com/analyze", {
+        method: "POST",
+        body: formData,
+      });
 
-    const result = await res.json();
-    setData(result);
+      const result = await res.json();
+      console.log(result); // DEBUG
+      setData(result);
+    } catch (err) {
+      console.error("Error:", err);
+      alert("Backend not reachable");
+    }
   };
 
   return (
     <div style={{ background: "#0f172a", minHeight: "100vh", color: "white", padding: "20px" }}>
       <h1 style={{ textAlign: "center" }}>📊 Data Analysis Web App</h1>
 
+      {/* Upload */}
       <div style={{ textAlign: "center", marginBottom: "20px" }}>
         <input
           type="file"
@@ -72,10 +84,9 @@ function App() {
             </select>
           </div>
 
-          {/* Charts Grid */}
+          {/* Charts */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
             
-            {/* Sales */}
             {data?.sales_by_category && (
               <div style={{ background: "#1e293b", padding: "15px", borderRadius: "10px" }}>
                 <h3>Sales by Category</h3>
@@ -93,7 +104,6 @@ function App() {
               </div>
             )}
 
-            {/* Profit */}
             {data?.profit_by_region && (
               <div style={{ background: "#1e293b", padding: "15px", borderRadius: "10px" }}>
                 <h3>Profit by Region</h3>
@@ -111,7 +121,6 @@ function App() {
               </div>
             )}
 
-            {/* Top Products */}
             {data?.top_products && (
               <div style={{ background: "#1e293b", padding: "15px", borderRadius: "10px", gridColumn: "span 2" }}>
                 <h3>Top 5 Products</h3>
@@ -128,8 +137,78 @@ function App() {
                 />
               </div>
             )}
-
           </div>
+
+          {/* Columns */}
+          {data?.columns && (
+            <div style={{ marginTop: "30px" }}>
+              <h3>Columns</h3>
+              <ul>
+                {data.columns.map((col, i) => (
+                  <li key={i}>{col}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Data Types */}
+          {data?.dtypes && (
+            <div style={{ marginTop: "20px" }}>
+              <h3>Data Types</h3>
+              <ul>
+                {Object.entries(data.dtypes).map(([col, type], i) => (
+                  <li key={i}>
+                    {col}: {type}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Missing Values */}
+          {data?.missing_values && (
+            <div style={{ marginTop: "20px" }}>
+              <h3>Missing Values</h3>
+              <ul>
+                {Object.entries(data.missing_values).map(([col, val], i) => (
+                  <li key={i}>
+                    {col}: {val}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Summary */}
+          {data?.summary && Object.keys(data.summary).length > 0 && (
+            <div style={{ marginTop: "20px" }}>
+              <h3>Summary Statistics</h3>
+
+              <table border="1" style={{ width: "100%", marginTop: "10px", color: "white" }}>
+                <thead>
+                  <tr>
+                    <th>Column</th>
+                    {Object.keys(data.summary[Object.keys(data.summary)[0]]).map((stat, i) => (
+                      <th key={i}>{stat}</th>
+                    ))}
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {Object.entries(data.summary).map(([col, stats], i) => (
+                    <tr key={i}>
+                      <td>{col}</td>
+                      {Object.values(stats).map((val, j) => (
+                        <td key={j}>
+                          {typeof val === "number" ? val.toFixed(2) : val}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </>
       )}
     </div>

@@ -41,8 +41,26 @@ async def analyze(file: UploadFile, region: str = Form(None)):
         .to_dict()
     )
 
+    # 🧠 NEW (Assignment Requirements)
+
+    # Column names
+    columns = df.columns.tolist()
+
+    # Data types
+    dtypes = df.dtypes.astype(str).to_dict()
+
+    # Missing values
+    missing_values = df.isnull().sum().to_dict()
+
+    # Summary statistics
+    summary = df.describe().to_dict()
+
     return {
         "rows": len(df),
+        "columns": columns,
+        "dtypes": dtypes,
+        "missing_values": missing_values,
+        "summary": summary,
         "sales_by_category": sales_by_category,
         "profit_by_region": profit_by_region,
         "regions": all_regions,
