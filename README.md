@@ -96,7 +96,7 @@ npm start
 4. API returns structured insights  
 5. Frontend renders charts and tables  
 
-👨‍💻 Developer
+## 👨‍💻 Developer
 
-   Ankit Kumar
-💻 Full Stack Developer
+**Ankit Kumar**  
+💻 Software Developer
