@@ -1,4 +1,4 @@
-# 📊 Data Analysis & Visualization Dashboard
+# 📊 Data Analysis Web App
 
 A high-performance full-stack web application designed for interactive business data analysis. This platform enables users to transform raw CSV data into actionable insights through real-time visualizations and dynamic filtering.
 
@@ -53,17 +53,8 @@ npm start
 
 
 👨‍💻 Developer
-Ankit Kumar
+
+ Ankit Kumar
  Software Developer
 
 
----
-
-### 📤 Final Terminal Commands
-After you save the file (`Ctrl + S`), run these three commands in your VS Code terminal to send it to GitHub:
-
-1. `git add README.md`
-2. `git commit -m "docs: complete professional readme with all sections"`
-3. `git push origin main`
-
-**You are officially DONE!** Your GitHub repository is now at an international professional standard. Great job working through all those steps! 🚀🔥💯
