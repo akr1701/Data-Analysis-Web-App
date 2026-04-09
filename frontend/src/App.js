@@ -12,7 +12,7 @@ function App() {
     formData.append("file", file);
     formData.append("region", regionValue);
 
-    const res = await fetch("http://127.0.0.1:8000/analyze", {
+    const res = await fetch("https://data-analysis-backend-hz2b.onrender.com/analyze", {
       method: "POST",
       body: formData,
     });
@@ -23,7 +23,7 @@ function App() {
 
   return (
     <div style={{ background: "#0f172a", minHeight: "100vh", color: "white", padding: "20px" }}>
-      <h1 style={{ textAlign: "center" }}>📊 Superstore Dashboard</h1>
+      <h1 style={{ textAlign: "center" }}>📊 Data Analysis Web App</h1>
 
       <div style={{ textAlign: "center", marginBottom: "20px" }}>
         <input
