@@ -1,6 +1,6 @@
-# 📊 Data Analysis Web App
+#📊 Data Analysis Web App
 
-A high-performance **full-stack data analysis platform** that transforms raw CSV data into meaningful business insights through real-time visualizations and dynamic filtering.
+A full-stack data analysis platform that allows users to upload any CSV file and generate real-time insights, visualizations, and statistical summaries.
 
 ---
 
@@ -22,19 +22,23 @@ https://data-analysis-backend-hz2b.onrender.com/docs
 ---
 
 ## 🚀 Features
-
-### 📊 Data Insights
-- **Sales Analysis:** Revenue aggregation by product category  
-- **Profit Analysis:** Region-wise profit breakdown  
-- **Top Products:** Top 5 products based on total sales  
-
-### ⚡ Interactivity
-- **Dynamic Region Filter:** Update dashboard in real-time (East, West, Central, South)  
-- **Live Data Processing:** Upload CSV and instantly visualize results  
-- **Interactive Charts:** Built using Chart.js  
-
----
-
+🔹 CSV Upload & Processing
+Upload any CSV dataset
+Automatic parsing and analysis using backend engine
+🔹 Data Insights
+Sales aggregation by category
+Profit distribution by region
+Top-performing products (Top 5)
+Total row count
+🔹 Advanced Analysis
+Column listing
+Data types detection
+Missing values detection
+Summary statistics (mean, min, max, etc.)
+🔹 Interactive Dashboard
+Dynamic region filter
+Real-time chart updates
+Responsive UI with dark theme
 ## 🛠️ Tech Stack
 
 - **Frontend:** React.js  
