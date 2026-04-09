@@ -1,60 +1,90 @@
 # 📊 Data Analysis Web App
 
-A high-performance full-stack web application designed for interactive business data analysis. This platform enables users to transform raw CSV data into actionable insights through real-time visualizations and dynamic filtering.
+A high-performance **full-stack data analysis platform** that transforms raw CSV data into meaningful business insights through real-time visualizations and dynamic filtering.
 
 ---
 
-## 🌐 Live Deployment
-- **Data Analaysis Web App:** [https://prismatic-tiramisu-964888.netlify.app](https://prismatic-tiramisu-964888.netlify.app)
-- **REST API Backend:** [https://data-analysis-backend-hz2b.onrender.com](https://data-analysis-backend-hz2b.onrender.com)
+## 🌐 Live Demo
+
+🚀 **Application URL:**  
+https://prismatic-tiramisu-964888.netlify.app  
+
+This is a fully deployed full-stack web application where the frontend and backend are seamlessly integrated. Users can upload datasets, apply filters, and view real-time data visualizations.
 
 ---
 
-## 🚀 Key Features
+### 🔧 Backend API (Optional)
+https://data-analysis-backend-hz2b.onrender.com  
 
-### 🔹 Automated Data Insights
-- **Sales Analysis:** Aggregated revenue metrics categorized by product segment.
-- **Regional Profitability:** Geographic breakdown of profit margins across different regions.
-- **Top Product Leaderboard:** Identification of the top 5 high-performing products based on total sales volume.
-
-### 🔹 Dynamic Interactivity
-- **Real-time Region Filter:** Seamlessly update the entire dashboard (Charts & Metrics) based on specific geographic selections (East, West, Central, South).
-- **Interactive Visualizations:** Responsive Bar charts powered by **Chart.js** for a modern user experience.
+### 📘 API Documentation
+https://data-analysis-backend-hz2b.onrender.com/docs  
 
 ---
 
-## 🛠️ Technical Architecture
+## 🚀 Features
 
-- **Backend:** Built with **FastAPI (Python)** for high-concurrency request handling.
-- **Data Engine:** Leverages the **Pandas** library for robust data manipulation and statistical computation.
-- **Frontend:** Developed using **React.js** for a reactive and component-based user interface.
-- **Styling:** Modern **Dark Mode** UI for enhanced data readability and professional aesthetics.
+### 📊 Data Insights
+- **Sales Analysis:** Revenue aggregation by product category  
+- **Profit Analysis:** Region-wise profit breakdown  
+- **Top Products:** Top 5 products based on total sales  
+
+### ⚡ Interactivity
+- **Dynamic Region Filter:** Update dashboard in real-time (East, West, Central, South)  
+- **Live Data Processing:** Upload CSV and instantly visualize results  
+- **Interactive Charts:** Built using Chart.js  
 
 ---
 
-## 📂 Project Setup & Installation
+## 🛠️ Tech Stack
 
-### 1️⃣ Backend Setup
+- **Frontend:** React.js  
+- **Backend:** FastAPI (REST API)  
+- **Data Processing:** Pandas  
+- **Visualization:** Chart.js  
+- **Deployment:** Netlify (Frontend), Render (Backend)  
+
+---
+
+## 📂 Project Structure
+
+DataAnalysisapp/
+│
+├── Backend/
+│ ├── main.py
+│ └── requirements.txt
+│
+├── frontend/
+│ ├── src/
+│ ├── public/
+│ └── package.json
+
+
+---
+
+## ⚙️ Installation & Setup
+
+### 🔹 Backend Setup
+
 ```bash
 cd Backend
 python -m venv venv
-# Activate on Windows
 venv\Scripts\activate
 pip install -r requirements.txt
 python -m uvicorn main:app --reload
 
+🔹 Frontend Setup
 
-2️⃣ Frontend Setup
-
-Bash
 cd frontend
 npm install
-npm start 
+npm start
 
+How It Works
+Upload a CSV dataset
+Backend processes data using Pandas
+API returns structured insights
+Frontend renders interactive charts
 
 👨‍💻 Developer
 
- Ankit Kumar
- Software Developer
-
-
+Ankit Kumar
+💻 Full Stack Developer
