@@ -71,7 +71,7 @@ function App() {
       }}
     >
       <h1 style={{ textAlign: "center", color: "#38bdf8" }}>
-        📊 Data Analysis Dashboard
+        📊 Data Analysis Web App
       </h1>
 
       <div style={{ textAlign: "center", margin: "30px 0" }}>
@@ -80,7 +80,7 @@ function App() {
           onChange={(e) => setFile(e.target.files[0])}
         />
         <button onClick={handleUpload}>
-          {loading ? "Processing..." : "Analyze Dataset"}
+          {loading ? "Processing..." : "Upload File"}
         </button>
       </div>
 
