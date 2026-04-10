@@ -6,7 +6,7 @@ A professional full-stack data analysis platform that allows users to upload any
 
 ## 🌐 Live Demo
 
-🚀 **Application URL:** [https://prismatic-tiramisu-964888.netlify.app](https://prismatic-tiramisu-964888.netlify.app)  
+🚀 **Application URL:** [https://data-analysis-web-app-delta.vercel.app](https://data-analysis-web-app-delta.vercel.app)  
 📘 **API Documentation (Swagger):** [https://data-analysis-backend-hz2b.onrender.com/docs](https://data-analysis-backend-hz2b.onrender.com/docs)  
 🔧 **Backend API Base:** [https://data-analysis-backend-hz2b.onrender.com](https://data-analysis-backend-hz2b.onrender.com)
 
