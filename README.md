@@ -106,7 +106,7 @@ cd frontend
 npm install
 
 # Start the development server
-npm start
+npm start 
  ---
 
 ## 👨‍💻 Developer & Project Information
