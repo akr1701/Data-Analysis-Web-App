@@ -70,7 +70,7 @@ async def get_summary(id: str):
         }
     }
 
-# 3. Return chart data 
+# 3.  Return chart data 
 @app.get("/plot-data/{id}")
 async def get_plot_data(id: str, column: str = None):
     if id not in data_store:
