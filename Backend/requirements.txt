@@ -1,4 +1,6 @@
+upstash-redis
+python-dotenv
 fastapi
 uvicorn
 pandas
-python-multipart
+numpy

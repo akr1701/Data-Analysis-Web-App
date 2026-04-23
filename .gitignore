@@ -1,0 +1,15 @@
+# ---------- FRONTEND ----------
+frontend/node_modules/
+frontend/build/
+frontend/coverage/
+
+# ---------- BACKEND ----------
+Backend/__pycache__/
+Backend/*.pyc
+Backend/.env
+Backend/venv/
+
+# ---------- GLOBAL ----------
+.env
+.DS_Store
+Thumbs.db

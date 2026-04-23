@@ -1,88 +1,150 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import uuid
+import numpy as np
+import io
+import logging
+import os
+from dotenv import load_dotenv
+from upstash_redis import Redis
 
 app = FastAPI()
 
-# ✅ CORS Setup
+logging.basicConfig(level=logging.INFO)
+
+# Load env variables
+load_dotenv()
+
+# CORS config
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://data-analysis-web-app-delta.vercel.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# In-memory storage to keep track of uploaded datasets
-# Real project mein database ya Redis use hota hai, par assignment ke liye ye sahi hai.
-data_store = {}
+# Redis (Upstash)
+redis_client = Redis(
+    url=os.getenv("UPSTASH_REDIS_REST_URL"),
+    token=os.getenv("UPSTASH_REDIS_REST_TOKEN")
+)
+
+EXPIRY_TIME = 300  # 5 minutes
+
 
 @app.get("/")
 def home():
     return {"message": "Data Analysis API is running"}
 
-# 1. Upload CSV 
-@app.post("/upload")
-async def upload_csv(file: UploadFile = File(...)):
-    if not file.filename.endswith('.csv'):
-        raise HTTPException(status_code=400, detail="Only CSV files are allowed")
-    
-    try:
-        df = pd.read_csv(file.file, encoding='latin1')
-        file_id = str(uuid.uuid4())[:8] # Generate a short unique ID
-        data_store[file_id] = df
-        
-        return {
-            "id": file_id,
-            "message": "File uploaded successfully",
-            "columns": df.columns.tolist(),
-            "total_rows": len(df)
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
-# 2. Return dataset summary 
+# --- Clean NaN for JSON ---
+def clean_nan(data):
+    if isinstance(data, dict):
+        return {k: clean_nan(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [clean_nan(v) for v in data]
+    elif isinstance(data, float) and np.isnan(data):
+        return None
+    return data
+
+
+# --- Background processing ---
+def process_file(file_id: str, contents: bytes):
+    try:
+        try:
+            df = pd.read_csv(io.BytesIO(contents), encoding="utf-8")
+        except:
+            df = pd.read_csv(io.BytesIO(contents), encoding="latin1")
+
+        # store as JSON (safer than pickle)
+        redis_client.set(file_id, df.to_json(), ex=EXPIRY_TIME)
+
+        logging.info(f"File processed: {file_id}")
+
+    except Exception as e:
+        logging.error(f"Processing error: {str(e)}")
+
+
+# --- Upload CSV ---
+@app.post("/upload")
+async def upload_csv(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
+
+    if not file.filename.endswith(".csv"):
+        raise HTTPException(status_code=400, detail="Only CSV files are allowed")
+
+    contents = await file.read()
+
+    # size limit (5MB)
+    if len(contents) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large (max 5MB)")
+
+    file_id = str(uuid.uuid4())[:8]
+
+    background_tasks.add_task(process_file, file_id, contents)
+
+    return {
+        "id": file_id,
+        "message": "File uploaded. Processing..."
+    }
+
+
+# --- Summary ---
 @app.get("/summary/{id}")
-async def get_summary(id: str):
-    if id not in data_store:
-        raise HTTPException(status_code=404, detail="Dataset not found")
-    
-    df = data_store[id]
-    
-    # Core Analysis 
+def get_summary(id: str):
+
+    data = redis_client.get(id)
+
+    if not data:
+        raise HTTPException(
+            status_code=404,
+            detail="Data not ready or expired"
+        )
+
+    df = pd.read_json(data)
+    numeric_df = df.select_dtypes(include=['number'])
+
     summary = {
         "columns": df.columns.tolist(),
         "data_types": df.dtypes.astype(str).to_dict(),
         "missing_values": df.isnull().sum().to_dict(),
-        "stats": df.describe().to_dict(), # Mean, Min, Max 
+        "stats": numeric_df.describe().to_dict() if not numeric_df.empty else {}
     }
-    
-    # Extra Insights 
-    numeric_df = df.select_dtypes(include=['number'])
-    highest_avg_col = numeric_df.mean().idxmax() if not numeric_df.empty else "N/A"
-    
-    return {
+
+    insights = {
+        "highest_avg_column": numeric_df.mean().idxmax() if not numeric_df.empty else None,
+        "total_missing": int(df.isnull().sum().sum())
+    }
+
+    return clean_nan({
         "summary": summary,
-        "insights": {
-            "highest_avg_column": highest_avg_col,
-            "total_missing": int(df.isnull().sum().sum())
-        }
-    }
+        "insights": insights
+    })
 
-# 3.  Return chart data 
+
+# --- Plot Data ---
 @app.get("/plot-data/{id}")
-async def get_plot_data(id: str, column: str = None):
-    if id not in data_store:
-        raise HTTPException(status_code=404, detail="Dataset not found")
-    
-    df = data_store[id]
-    
-    if column and column in df.columns:
-        # User selection ke basis par data (Top 10 values for clean charts)
-        chart_data = df[column].value_counts().head(10).to_dict()
-    else:
-        # Default chart data (e.g., first available numeric column)
-        chart_data = df.iloc[:, 0].value_counts().head(10).to_dict()
+def get_plot_data(id: str, column: str = None):
 
-    return {"chart_data": chart_data}
+    data = redis_client.get(id)
+
+    if not data:
+        raise HTTPException(
+            status_code=404,
+            detail="Data not ready or expired"
+        )
+
+    df = pd.read_json(data)
+
+    if column and column in df.columns:
+        selected = df[column]
+    else:
+        selected = df.iloc[:, 0]
+
+    chart_data = selected.value_counts().head(10).to_dict()
+
+    return {"chart_data": clean_nan(chart_data)}
