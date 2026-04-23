@@ -19,10 +19,7 @@ load_dotenv()
 # CORS config
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "https://data-analysis-web-app-delta.vercel.app"
-    ],
+    allow_origins=["https://data-analysis-web-app-delta.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
