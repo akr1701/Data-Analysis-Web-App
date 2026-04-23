@@ -148,3 +148,4 @@ def get_plot_data(id: str, column: str = None):
     chart_data = selected.value_counts().head(10).to_dict()
 
     return {"chart_data": clean_nan(chart_data)}
+
