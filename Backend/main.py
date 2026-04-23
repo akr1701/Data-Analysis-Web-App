@@ -58,8 +58,9 @@ def process_file(file_id: str, contents: bytes):
         except:
             df = pd.read_csv(io.BytesIO(contents), encoding="latin1")
 
-        # store as JSON (safer than pickle)
-        redis_client.set(file_id, df.to_json(), ex=EXPIRY_TIME)
+        #  proper format
+        redis_client.set(file_id, df.to_json(orient="records"))
+        redis_client.expire(file_id, EXPIRY_TIME)
 
         logging.info(f"File processed: {file_id}")
 
@@ -69,24 +70,27 @@ def process_file(file_id: str, contents: bytes):
 
 # --- Upload CSV ---
 @app.post("/upload")
-async def upload_csv(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
+async def upload_csv(file: UploadFile = File(...)):
 
     if not file.filename.endswith(".csv"):
         raise HTTPException(status_code=400, detail="Only CSV files are allowed")
 
     contents = await file.read()
 
-    # size limit (5MB)
     if len(contents) > 5 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="File too large (max 5MB)")
 
     file_id = str(uuid.uuid4())[:8]
 
-    background_tasks.add_task(process_file, file_id, contents)
+    #  old task 
+    # background_tasks.add_task(process_file, file_id, contents)
+
+    #  update upload error
+    process_file(file_id, contents)
 
     return {
         "id": file_id,
-        "message": "File uploaded. Processing..."
+        "message": "File uploaded & processed"
     }
 
 
@@ -102,7 +106,12 @@ def get_summary(id: str):
             detail="Data not ready or expired"
         )
 
-    df = pd.read_json(data)
+    # ✅ FIX
+    if isinstance(data, bytes):
+        data = data.decode("utf-8")
+
+    df = pd.read_json(data, orient="records")
+
     numeric_df = df.select_dtypes(include=['number'])
 
     summary = {
@@ -135,7 +144,10 @@ def get_plot_data(id: str, column: str = None):
             detail="Data not ready or expired"
         )
 
-    df = pd.read_json(data)
+    if isinstance(data, bytes):
+        data = data.decode("utf-8")
+
+    df = pd.read_json(data, orient="records")
 
     if column and column in df.columns:
         selected = df[column]
