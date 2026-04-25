@@ -9,13 +9,23 @@ function App() {
   const [chartData, setChartData] = useState(null);
   const [selectedColumn, setSelectedColumn] = useState("");
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   const API_BASE = "https://data-analysis-backend-hz2b.onrender.com";
 
-  // 1. Upload CSV
+  // 🔥 Wake backend (Render sleep fix)
+  useEffect(() => {
+    fetch(`${API_BASE}/`)
+      .then(() => console.log("Backend ready"))
+      .catch(() => console.log("Backend sleeping"));
+  }, []);
+
+  // 📤 Upload CSV
   const handleUpload = async () => {
     if (!file) return alert("Please select a file");
+
     setLoading(true);
+    setMessage("Uploading file...");
 
     const formData = new FormData();
     formData.append("file", file);
@@ -26,33 +36,69 @@ function App() {
         body: formData,
       });
 
+      if (!res.ok) {
+        throw new Error("Upload failed");
+      }
+
       const result = await res.json();
       setDatasetId(result.id);
-      fetchSummary(result.id);
+
+      setMessage("Processing file... please wait ⏳");
+
+      // ⏳ wait for backend processing
+      setTimeout(() => {
+        fetchSummary(result.id);
+      }, 2000);
+
     } catch (err) {
-      alert("Upload failed!");
+      console.error(err);
+      setMessage("❌ Upload failed! Try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // 2. Summary
-  const fetchSummary = async (id) => {
-    const res = await fetch(`${API_BASE}/summary/${id}`);
-    const result = await res.json();
-    setSummaryData(result);
+  // 📊 Fetch Summary (with retry)
+  const fetchSummary = async (id, retry = 0) => {
+    try {
+      const res = await fetch(`${API_BASE}/summary/${id}`);
+
+      if (!res.ok) {
+        throw new Error("Summary not ready");
+      }
+
+      const result = await res.json();
+      setSummaryData(result);
+      setMessage("✅ Data loaded successfully!");
+
+    } catch (err) {
+      if (retry < 5) {
+        console.log("Retrying summary...", retry);
+        setMessage("⏳ Preparing data... retrying");
+        setTimeout(() => fetchSummary(id, retry + 1), 2000);
+      } else {
+        setMessage("❌ Failed to load data");
+      }
+    }
   };
 
-  // 3. Chart Data (FIXED with useCallback)
+  // 📈 Fetch Chart Data
   const fetchChartData = useCallback(async (col) => {
     if (!datasetId || !col) return;
 
-    const res = await fetch(
-      `${API_BASE}/plot-data/${datasetId}?column=${col}`
-    );
+    try {
+      const res = await fetch(
+        `${API_BASE}/plot-data/${datasetId}?column=${col}`
+      );
 
-    const result = await res.json();
-    setChartData(result.chart_data);
+      if (!res.ok) return;
+
+      const result = await res.json();
+      setChartData(result.chart_data);
+
+    } catch (err) {
+      console.log("Chart error", err);
+    }
   }, [datasetId]);
 
   useEffect(() => {
@@ -74,36 +120,50 @@ function App() {
         📊 Data Analysis Web App
       </h1>
 
+      {/* Upload */}
       <div style={{ textAlign: "center", margin: "30px 0" }}>
         <input
           type="file"
           onChange={(e) => setFile(e.target.files[0])}
         />
-        <button onClick={handleUpload}>
+        <br /><br />
+        <button onClick={handleUpload} disabled={loading}>
           {loading ? "Processing..." : "Upload File"}
         </button>
       </div>
 
+      {/* Status Message */}
+      {message && (
+        <p style={{ textAlign: "center", color: "#facc15" }}>
+          {message}
+        </p>
+      )}
+
+      {/* Summary */}
       {summaryData && (
         <>
-          <div>
+          <div style={{ marginTop: "30px" }}>
             <h3>Insights</h3>
             <p>
-              Top Column: {summaryData.insights.highest_avg_column}
+              Top Column:{" "}
+              {summaryData?.insights?.highest_avg_column || "N/A"}
             </p>
             <p>
-              Missing Values: {summaryData.insights.total_missing}
+              Missing Values:{" "}
+              {summaryData?.insights?.total_missing || 0}
             </p>
           </div>
 
-          <div>
+          {/* Chart */}
+          <div style={{ marginTop: "30px" }}>
             <h3>Visualization</h3>
 
             <select
               onChange={(e) => setSelectedColumn(e.target.value)}
+              value={selectedColumn}
             >
               <option value="">Choose Column</option>
-              {summaryData.summary.columns.map((col) => (
+              {summaryData?.summary?.columns?.map((col) => (
                 <option key={col} value={col}>
                   {col}
                 </option>
@@ -111,17 +171,19 @@ function App() {
             </select>
 
             {chartData && (
-              <Bar
-                data={{
-                  labels: Object.keys(chartData),
-                  datasets: [
-                    {
-                      label: `Distribution`,
-                      data: Object.values(chartData),
-                    },
-                  ],
-                }}
-              />
+              <div style={{ marginTop: "20px" }}>
+                <Bar
+                  data={{
+                    labels: Object.keys(chartData),
+                    datasets: [
+                      {
+                        label: "Distribution",
+                        data: Object.values(chartData),
+                      },
+                    ],
+                  }}
+                />
+              </div>
             )}
           </div>
         </>
@@ -130,4 +192,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;
