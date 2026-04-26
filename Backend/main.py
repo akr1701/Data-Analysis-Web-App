@@ -32,7 +32,7 @@ redis_client = Redis(
 # 30 minute expiry — enough for any session
 EXPIRY_TIME = 1800
 MAX_ROWS = 500
-MAX_FILE_SIZE = 2 * 1024 * 1024  # 2MB
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 
 
 @app.get("/")
