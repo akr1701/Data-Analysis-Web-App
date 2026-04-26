@@ -4,34 +4,35 @@ import pandas as pd
 import uuid
 import numpy as np
 import io
+import gc
 import logging
 import os
 from dotenv import load_dotenv
 from upstash_redis import Redis
 
+load_dotenv()
+
 app = FastAPI()
 
 logging.basicConfig(level=logging.INFO)
 
-# Load env variables
-load_dotenv()
-
-# ✅ FIXED CORS (IMPORTANT)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 🔥 FIX
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Redis (Upstash)
 redis_client = Redis(
     url=os.getenv("UPSTASH_REDIS_REST_URL"),
     token=os.getenv("UPSTASH_REDIS_REST_TOKEN")
 )
 
-EXPIRY_TIME = 1800  # ✅ increased to 30 minutes
+# 30 minute expiry — enough for any session
+EXPIRY_TIME = 1800
+MAX_ROWS = 500
+MAX_FILE_SIZE = 2 * 1024 * 1024  # 2MB
 
 
 @app.get("/")
@@ -39,7 +40,6 @@ def home():
     return {"message": "Data Analysis API is running"}
 
 
-# --- Clean NaN for JSON ---
 def clean_nan(data):
     if isinstance(data, dict):
         return {k: clean_nan(v) for k, v in data.items()}
@@ -50,26 +50,32 @@ def clean_nan(data):
     return data
 
 
-# --- Process File ---
 def process_file(file_id: str, contents: bytes):
+    # try utf-8 first, fall back to latin1 for older files
     try:
-        logging.info("Processing started")
+        df = pd.read_csv(io.BytesIO(contents), encoding="utf-8")
+    except Exception:
+        df = pd.read_csv(io.BytesIO(contents), encoding="latin1")
 
-        try:
-            df = pd.read_csv(io.BytesIO(contents), encoding="utf-8")
-        except:
-            df = pd.read_csv(io.BytesIO(contents), encoding="latin1")
+    # free tier has 512MB limit so cap rows to avoid OOM crash
+    if len(df) > MAX_ROWS:
+        logging.info(f"Large file — trimming to {MAX_ROWS} rows")
+        df = df.head(MAX_ROWS)
 
-        redis_client.set(file_id, df.to_json(orient="records"))
-        redis_client.expire(file_id, EXPIRY_TIME)
+    # convert string columns to category dtype — saves a lot of memory
+    for col in df.select_dtypes(include=["object"]).columns:
+        df[col] = df[col].astype("category")
 
-        logging.info(f"File processed: {file_id}")
+    redis_client.set(file_id, df.to_json(orient="records"))
+    redis_client.expire(file_id, EXPIRY_TIME)
 
-    except Exception as e:
-        logging.error(f"Processing error: {str(e)}")
+    # explicitly free memory after saving
+    del df
+    gc.collect()
+
+    logging.info(f"Stored file_id: {file_id}")
 
 
-# --- Upload CSV ---
 @app.post("/upload")
 async def upload_csv(file: UploadFile = File(...)):
     if not file.filename.endswith(".csv"):
@@ -77,34 +83,36 @@ async def upload_csv(file: UploadFile = File(...)):
 
     contents = await file.read()
 
-    if len(contents) > 5 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="File too large (max 5MB)")
+    if len(contents) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File too large — max 2MB allowed")
 
     file_id = str(uuid.uuid4())[:8]
 
-    process_file(file_id, contents)
+    try:
+        process_file(file_id, contents)
+    except Exception as e:
+        logging.error(f"Upload processing failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Could not process file: {str(e)}")
 
-    return {
-        "id": file_id,
-        "message": "File uploaded & processed"
-    }
+    return {"id": file_id, "message": "File uploaded and processed successfully"}
 
 
-# --- Summary ---
 @app.get("/summary/{id}")
 def get_summary(id: str):
     try:
         data = redis_client.get(id)
 
         if not data:
-            raise HTTPException(status_code=404, detail="Data not ready or expired")
+            raise HTTPException(
+                status_code=404,
+                detail="Data not found — it may have expired. Please re-upload the file."
+            )
 
         if isinstance(data, bytes):
             data = data.decode("utf-8")
 
-        df = pd.read_json(data, orient="records")
-
-        numeric_df = df.select_dtypes(include=['number'])
+        df = pd.read_json(io.StringIO(data), orient="records")
+        numeric_df = df.select_dtypes(include=["number"])
 
         summary = {
             "columns": df.columns.tolist(),
@@ -118,30 +126,33 @@ def get_summary(id: str):
             "total_missing": int(df.isnull().sum().sum())
         }
 
-        return clean_nan({
-            "summary": summary,
-            "insights": insights
-        })
+        del df, numeric_df
+        gc.collect()
 
+        return clean_nan({"summary": summary, "insights": insights})
+
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Summary error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=500, detail="Something went wrong while fetching summary")
 
 
-# --- Plot Data ---
 @app.get("/plot-data/{id}")
 def get_plot_data(id: str, column: str = None):
     try:
         data = redis_client.get(id)
 
         if not data:
-            raise HTTPException(status_code=404, detail="Data not ready or expired")
+            raise HTTPException(
+                status_code=404,
+                detail="Data not found — it may have expired. Please re-upload the file."
+            )
 
         if isinstance(data, bytes):
             data = data.decode("utf-8")
 
-        df = pd.read_json(data, orient="records")
-
+        df = pd.read_json(io.StringIO(data), orient="records")
         if column and column in df.columns:
             selected = df[column]
         else:
@@ -149,8 +160,13 @@ def get_plot_data(id: str, column: str = None):
 
         chart_data = selected.value_counts().head(10).to_dict()
 
+        del df
+        gc.collect()
+
         return {"chart_data": clean_nan(chart_data)}
 
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Plot error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=500, detail="Something went wrong while fetching chart data")
